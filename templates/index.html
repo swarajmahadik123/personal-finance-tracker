@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+    <div class="container mx-auto p-4 max-w-5xl">
+        <!-- Notification Div -->
+        <div id="notification" class="fixed top-4 right-4 hidden p-4 rounded-lg shadow-lg text-white"></div>
+
+        <!-- Header -->
+        <header class="text-center mb-10 pt-8">
+            <div class="flex items-center justify-center mb-4">
+                <i data-lucide="brain-circuit" class="w-10 h-10 text-blue-600 mr-3"></i>
+                <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                    Personal Finance AI
+                </h1>
+            </div>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                Track your finances, analyze spending patterns, and get AI-powered insights
+            </p>
+        </header>
+
+        <!-- Income and Savings Sections -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Income Section -->
+            <div class="card p-6">
+                <div class="flex items-center mb-5">
+                    <i data-lucide="trending-up" class="w-6 h-6 text-blue-500 mr-2"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Income</h2>
+                </div>
+                <form id="income-form" action="/add_income" method="POST" class="flex flex-wrap gap-3">
+                    <div class="relative flex-grow">
+                        <i data-lucide="dollar-sign" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input type="number" name="amount" value="{{ income }}" class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Monthly income">
+                    </div>
+                    <button type="submit" class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 px-5 rounded-lg flex items-center transition-all">
+                        <i data-lucide="save" class="w-5 h-5 mr-2"></i>
+                        Update
+                    </button>
+                </form>
+            </div>
+
+            <!-- Savings Section -->
+            <div class="card p-6">
+                <div class="flex items-center mb-5">
+                    <i data-lucide="piggy-bank" class="w-6 h-6 text-green-500 mr-2"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Savings</h2>
+                </div>
+                <div class="flex items-center justify-center h-24">
+                    <div class="text-center">
+                        <p class="text-gray-600 mb-2">Total Savings</p>
+                        <p class="text-4xl font-bold text-green-600">${{ savings }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Section -->
+        <div class="card p-6 mb-6">
+            <div class="flex items-center mb-5">
+                <i data-lucide="receipt" class="w-6 h-6 text-red-500 mr-2"></i>
+                <h2 class="text-xl font-semibold text-gray-800">Expenses</h2>
+            </div>
+            <form id="expense-form" action="/add_expense" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+                <div class="relative">
+                    <i data-lucide="file-text" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <input type="text" name="description" placeholder="Description" class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                </div>
+                <div class="relative">
+                    <i data-lucide="dollar-sign" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <input type="number" name="amount" placeholder="Amount" class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                </div>
+                <div class="relative">
+                    <i data-lucide="tag" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <input type="text" name="category" placeholder="Category" class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                </div>
+                <button type="submit" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-3 rounded-lg flex items-center justify-center transition-all">
+                    <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+                    Add Expense
+                </button>
+            </form>
+            
+            <!-- Expense Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left p-3 text-gray-600">Description</th>
+                            <th class="text-left p-3 text-gray-600">Amount</th>
+                            <th class="text-left p-3 text-gray-600">Category</th>
+                            <th class="text-right p-3 text-gray-600">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr class="border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                            <td class="p-3">
+                                <form action="/edit_expense/{{ loop.index0 }}" method="POST" class="flex items-center gap-3">
+                                    <input type="text" name="description" value="{{ expense.description }}" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            </td>
+                            <td class="p-3">
+                                <input type="number" name="amount" value="{{ expense.amount }}" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            </td>
+                            <td class="p-3">
+                                <input type="text" name="category" value="{{ expense.category }}" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            </td>
+                            <td class="p-3 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button type="submit" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white p-2 rounded-lg flex items-center transition-all">
+                                        <i data-lucide="save" class="w-4 h-4"></i>
+                                        <span class="sr-only">Update</span>
+                                    </button>
+                                </form>
+                                <form action="/delete_expense/{{ loop.index0 }}" method="POST" class="inline">
+                                    <button type="submit" class="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white p-2 rounded-lg flex items-center transition-all">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        <span class="sr-only">Delete</span>
+                                    </button>
+                                </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Expense Chart and Financial Tips -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Expense Chart -->
+            <div class="card p-6">
+                <div class="flex items-center mb-5">
+                    <i data-lucide="pie-chart" class="w-6 h-6 text-indigo-500 mr-2"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Expense Analysis</h2>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <div id="chart-container" class="mb-4 rounded-xl overflow-hidden">
+    <img id="chart-image" src="" alt="Expense Chart" class="mx-auto hidden">
+</div>
+<button id="generate-chart-btn" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white py-2 px-4 rounded-lg flex items-center mt-4 transition-all">
+    <i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i>
+    Generate Chart
+</button>
+                </div>
+            </div>
+
+            <!-- Financial Tips -->
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center">
+                        <i data-lucide="lightbulb" class="w-6 h-6 text-yellow-500 mr-2"></i>
+                        <h2 class="text-xl font-semibold text-gray-800">AI Financial Tips</h2>
+                    </div>
+                    <button id="fetch-tips-btn" onclick="fetchTips()" class="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white py-2 px-4 rounded-lg flex items-center transition-all">
+    <i data-lucide="sparkles" class="w-5 h-5 mr-2"></i>
+    <span>Get AI Insights</span>
+</button>
+                </div>
+                <ul id="tips-list" class="space-y-2 max-h-60 overflow-y-auto p-2">
+                    <!-- Tips will be dynamically inserted here -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Clear Data Button -->
+        <div class="card p-6">
+            <div class="flex items-center mb-5">
+                <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500 mr-2"></i>
+                <h2 class="text-xl font-semibold text-gray-800">Data Management</h2>
+            </div>
+            <div class="flex justify-center">
+                <form id="clear-data-form" action="/clear_data" method="POST" class="w-full max-w-md">
+                    <button type="submit" class="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white py-3 px-6 rounded-lg w-full flex items-center justify-center transition-all">
+                        <i data-lucide="trash-2" class="w-5 h-5 mr-2"></i>
+                        Clear All Financial Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-12 py-6 text-center text-gray-500 text-sm">
+        <p>© 2023 Personal Finance AI. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Notification system
+        function showNotification(message, type = 'error') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white ${
+                type === 'error' ? 'bg-red-500' : 'bg-green-500'
+            }`;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Format tips to make text within ** bold
+        function formatTips(tips) {
+            return tips.map(tip => {
+                // Replace **text** with <strong>text</strong>
+                return tip.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            });
+        }
+
+        // Handle form submissions
+        function handleFormSubmission(formId, validationCallback, successCallback) {
+            const form = document.getElementById(formId);
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                if (validationCallback && !validationCallback(this)) {
+                    return; // Stop if validation fails
+                }
+
+                try {
+                    const formData = new FormData(this);
+                    const response = await fetch(this.action, {
+                        method: this.method,
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        if (successCallback) {
+                            successCallback(data);
+                        }
+                        showNotification(data.message || 'Action completed successfully!', 'success');
+                    } else {
+                        showNotification(data.message || 'Something went wrong. Please try again.');
+                    }
+                } catch (error) {
+                    showNotification('An error occurred. Please try again.');
+                }
+            });
+        }
+
+        // Validate expense form
+        function validateExpenseForm(form) {
+            const amountInput = form.querySelector('input[name="amount"]');
+            const descriptionInput = form.querySelector('input[name="description"]');
+            const categoryInput = form.querySelector('input[name="category"]');
+
+            if (!descriptionInput.value.trim()) {
+                showNotification('Please enter a description for the expense.');
+                descriptionInput.focus();
+                return false;
+            }
+
+            if (!amountInput.value.trim()) {
+                showNotification('Please enter an amount for the expense.');
+                amountInput.focus();
+                return false;
+            }
+
+            if (!categoryInput.value.trim()) {
+                showNotification('Please enter a category for the expense.');
+                categoryInput.focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        // Validate income form
+        function validateIncomeForm(form) {
+            const amountInput = form.querySelector('input[name="amount"]');
+            if (!amountInput.value.trim()) {
+                showNotification('Please enter an amount for income.');
+                amountInput.focus();
+                return false;
+            }
+            return true;
+        }
+
+       // Handle Generate Chart button
+document.getElementById('generate-chart-btn').addEventListener('click', async function() {
+    try {
+        const response = await fetch('/expense_chart');
+        const data = await response.json();
+
+        if (data.success && data.plot_url) {
+            const chartImage = document.getElementById('chart-image');
+            chartImage.src = `data:image/png;base64,${data.plot_url}`;
+            chartImage.classList.remove('hidden');
+            showNotification('Chart generated successfully!', 'success');
+        } else {
+            showNotification(data.message || 'Failed to generate chart. Please try again.');
+        }
+    } catch (error) {
+        showNotification('An error occurred while generating the chart.');
+    }
+});
+
+        // Fetch financial tips
+        async function fetchTips() {
+    const fetchTipsBtn = document.getElementById('fetch-tips-btn');
+    const tipsList = document.getElementById('tips-list');
+
+    try {
+        // Disable the button and show loading state
+        fetchTipsBtn.disabled = true;
+        fetchTipsBtn.innerHTML = `
+            <i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i>
+            <span>Loading...</span>
+        `;
+        lucide.createIcons(); // Reinitialize icons to render the loading spinner
+
+        // Fetch tips from the server
+        const response = await fetch('/fetch_tips', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+        const formattedTips = formatTips(data.tips);
+
+        // Update the tips list
+        tipsList.innerHTML = formattedTips.map(tip => `<li class="p-2 bg-gray-50 rounded-lg">${tip}</li>`).join('');
+    } catch (error) {
+        showNotification('Failed to fetch financial tips. Please try again.');
+    } finally {
+        // Re-enable the button and restore its original state
+        fetchTipsBtn.disabled = false;
+        fetchTipsBtn.innerHTML = `
+            <i data-lucide="sparkles" class="w-5 h-5 mr-2"></i>
+            <span>Get AI Insights</span>
+        `;
+        lucide.createIcons(); // Reinitialize icons to render the sparkles icon
+    }
+}
+
+        // Initialize form handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            handleFormSubmission('expense-form', validateExpenseForm, () => {
+                // Reload expenses table or update UI dynamically
+                window.location.reload(); // Optional: Use AJAX to update the table instead
+            });
+
+            handleFormSubmission('income-form', validateIncomeForm, () => {
+                // Reload income section or update UI dynamically
+                window.location.reload(); // Optional: Use AJAX to update the income display
+            });
+
+            // Handle Clear Data form submission
+            document.getElementById('clear-data-form').addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                try {
+                    const response = await fetch('/clear_data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showNotification('All financial data has been cleared successfully!', 'success');
+                        // Reload the page to reflect the cleared data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showNotification('Failed to clear data. Please try again.');
+                    }
+                } catch (error) {
+                    showNotification('An error occurred while clearing data. Please try again.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
